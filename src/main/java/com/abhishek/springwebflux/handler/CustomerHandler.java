@@ -9,6 +9,8 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Objects;
+
 @Service
 public class CustomerHandler {
 
@@ -18,5 +20,15 @@ public class CustomerHandler {
     public Mono<ServerResponse> customerHandler(ServerRequest request){
         Flux<Customer> allCustomersList = customerDao.getAllCustomersList();
         return ServerResponse.ok().body(allCustomersList,Customer.class);
+    }
+    public Mono<ServerResponse> customerHandlerInput(ServerRequest request){
+        Integer customerId=Integer.valueOf(request.pathVariable("input"));
+        Flux<Customer> customer=customerDao.getAllCustomersList().filter(c-> Objects.equals(c.getId(), customerId));
+        return ServerResponse.ok().body(customer,Customer.class);
+    }
+    public Mono<ServerResponse> saveCustomer(ServerRequest request){
+        Mono<Customer> customerMono = request.bodyToMono(Customer.class);
+        Mono<String> customerString = customerMono.map(dto -> dto.getId() + ": " + dto.getName());
+        return ServerResponse.ok().body(customerString, String.class);
     }
 }
